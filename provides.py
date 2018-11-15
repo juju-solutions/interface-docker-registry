@@ -70,6 +70,13 @@ class RegistryRequest:
         return self._unit.relation.to_publish
 
     @property
+    def has_config(self):
+        """
+        Whether or not registry config has been set via `set_registry_config`.
+        """
+        return 'registry_netloc' in self._unit.relation.to_publish
+
+    @property
     def is_changed(self):
         """
         Whether this request has changed since the last time it was
@@ -81,22 +88,13 @@ class RegistryRequest:
     def unit_name(self):
         return self._unit.unit_name
 
-    def set_registry_config(self,
-                            registry_url,
-                            tls_enabled,
-                            tls_ca):
+    def set_registry_config(self, registry_netloc, **kwargs):
         """
-        Set the registry config for this request.
+        Set the registry config for this request. Minimally, a network
+        location is required. Other data (auth, tls, etc) may also be
+        set.
         """
-        self._unit.relation.to_publish.update({
-            'registry_url': registry_url,
-            'tls_enabled': tls_enabled,
-            'tls_ca': tls_ca,
-        })
-
-    @property
-    def has_config(self):
-        """
-        Whether or not registry config has been set via `set_registry_config`.
-        """
-        return 'registry_config' in self._unit.relation.to_publish
+        data = {'registry_netloc': registry_netloc}
+        for k, v in kwargs.items():
+            data[k] = v
+        self._unit.relation.to_publish.update(data)
