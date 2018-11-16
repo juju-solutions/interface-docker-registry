@@ -22,11 +22,15 @@ class DockerRegistryProvides(Endpoint):
     ```python
     from charms.reactive import when, endpoint_from_flag
     from charms import layer
+    @when('endpoint.docker-registry.joined')
+    def configure_client():
+        registry = endpoint_from_flag('endpoint.docker-registry.joined')
+        registry.set_registry_config(netloc, **data)
     @when('endpoint.docker-registry.requests-pending')
-    def handle_requests():
+    def handle_image_request():
         registry = endpoint_from_flag('endpoint.docker-registry.requests-pending')
         for request in registry.requests:
-            request.set_registry_config(relevant_config)
+            request.image_data(name, tag)
         registry.mark_completed()
     ```
     """
@@ -57,10 +61,21 @@ class DockerRegistryProvides(Endpoint):
         clear_flag(self.expand_name('requests-pending'))
         self._requests = []
 
+    def set_registry_config(self, registry_netloc, **kwargs):
+        """
+        Set the registry config. Minimally, a network location is required.
+        Other data (auth, tls, etc) may also be set.
+        """
+        data = {'registry_netloc': registry_netloc}
+        for k, v in kwargs.items():
+            data[k] = v
+        for relation in self.relations:
+            relation.to_publish.update(data)
+
 
 class RegistryRequest:
     """
-    A request for registry data from a single remote unit.
+    A request from a single remote unit to include an image in our registry.
     """
     def __init__(self, unit):
         self._unit = unit
@@ -70,33 +85,30 @@ class RegistryRequest:
         return self._unit.relation.to_publish
 
     @property
+    def has_image(self):
+        """
+        Whether or not an image has been processed via `image_data`.
+        """
+        return 'image' in self._unit.relation.to_publish
+
+    @property
     def is_changed(self):
         """
         Whether this request has changed since the last time it was
         marked completed (if ever).
         """
-        return not self.has_config
+        return not self.has_image
 
     @property
     def unit_name(self):
         return self._unit.unit_name
 
-    def set_registry_config(self,
-                            registry_url,
-                            tls_enabled,
-                            tls_ca):
+    def image_data(self, image, tag):
         """
-        Set the registry config for this request.
+        Set the image characteristics this request.
         """
-        self._unit.relation.to_publish.update({
-            'registry_url': registry_url,
-            'tls_enabled': tls_enabled,
-            'tls_ca': tls_ca,
-        })
-
-    @property
-    def has_config(self):
-        """
-        Whether or not registry config has been set via `set_registry_config`.
-        """
-        return 'registry_config' in self._unit.relation.to_publish
+        data = {
+            'image': image,
+            'tag': tag,
+        }
+        self._unit.relation.to_publish.update(data)

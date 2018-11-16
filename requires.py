@@ -28,9 +28,7 @@ class DockerRegistryRequires(Endpoint):
     @when('endpoint.docker-registry.ready')
     def registry_ready():
         registry = endpoint_from_flag('endpoint.docker-registry.joined')
-        update_config(registry.registry_url,
-                      registry.tls_enabled,
-                      registry.tls_ca)
+        update_config(registry.registry_netloc)
     ```
     """
 
@@ -41,7 +39,7 @@ class DockerRegistryRequires(Endpoint):
         ever be connected to a single docker-registry application with a
         single unit.
         """
-        return self.relations[0].joined_units.received
+        return self.all_joined_units.received
 
     @property
     def _to_publish(self):
@@ -61,24 +59,56 @@ class DockerRegistryRequires(Endpoint):
     def remove_ready(self):
         clear_flag(self.expand_name('ready'))
 
+    def has_auth_basic(self):
+        """
+        Whether or not the registry has basic/htpasswd auth.
+        """
+        return all(field is not None for field in [
+            self.basic_password,
+            self.basic_user,
+        ])
+
+    def has_custom_url(self):
+        """
+        Whether or not the registry has a custom URL.
+        """
+        return all(field is not None for field in [
+            self.registry_url,
+        ])
+
+    def has_tls(self):
+        """
+        Whether or not the registry has TLS certificates configured.
+        """
+        return all(field is not None for field in [
+            self.tls_ca,
+        ])
+
     @property
     def is_ready(self):
         """
         Whether or not the request for this instance has been completed.
         """
         return all(field is not None for field in [
-            self.registry_url,
-            self.tls_enabled,
+            self.registry_netloc,
         ])
 
     @property
-    def registry_url(self):
-        return self._received['registry_url']
+    def basic_password(self):
+        return self._received.get('basic_password')
 
     @property
-    def tls_enabled(self):
-        return self._received['tls_enabled']
+    def basic_user(self):
+        return self._received.get('basic_user')
+
+    @property
+    def registry_netloc(self):
+        return self._received.get('registry_netloc')
+
+    @property
+    def registry_url(self):
+        return self._received.get('registry_url')
 
     @property
     def tls_ca(self):
-        return self._received['tls_ca']
+        return self._received.get('tls_ca')
