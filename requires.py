@@ -39,7 +39,7 @@ class DockerRegistryRequires(Endpoint):
         ever be connected to a single docker-registry application with a
         single unit.
         """
-        return self.relations[0].joined_units.received
+        return self.all_joined_units.received
 
     @property
     def _to_publish(self):
@@ -95,20 +95,20 @@ class DockerRegistryRequires(Endpoint):
 
     @property
     def basic_password(self):
-        return self._received['basic_password']
+        return self._received.get('basic_password')
 
     @property
     def basic_user(self):
-        return self._received['basic_user']
+        return self._received.get('basic_user')
 
     @property
     def registry_netloc(self):
-        return self._received['registry_netloc']
+        return self._received.get('registry_netloc')
 
     @property
     def registry_url(self):
-        return self._received['registry_url']
+        return self._received.get('registry_url')
 
     @property
     def tls_ca(self):
-        return self._received['tls_ca']
+        return self._received.get('tls_ca')
