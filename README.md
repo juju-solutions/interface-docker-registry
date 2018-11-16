@@ -27,7 +27,7 @@ React to changes from `docker-registry` as follows:
 ```python
 @when('endpoint.docker-registry.ready')
     def registry_ready():
-        registry = endpoint_from_flag('endpoint.docker-registry.joined')
+        registry = endpoint_from_flag('endpoint.docker-registry.ready')
         configure_registry(registry.registry_netloc)
         if registry.has_auth_basic():
             configure_auth(registry.basic_user,
