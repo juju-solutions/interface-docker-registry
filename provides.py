@@ -35,11 +35,10 @@ class DockerRegistryProvides(Endpoint):
     ```
     """
 
-    @when('endpoint.{endpoint_name}.changed')
+    @when("endpoint.{endpoint_name}.changed")
     def check_requests(self):
-        toggle_flag(self.expand_name('requests-pending'),
-                    len(self.requests) > 0)
-        clear_flag(self.expand_name('changed'))
+        toggle_flag(self.expand_name("requests-pending"), len(self.requests) > 0)
+        clear_flag(self.expand_name("changed"))
 
     @property
     def requests(self):
@@ -47,10 +46,9 @@ class DockerRegistryProvides(Endpoint):
         A list of the new or updated #RegistryRequests that
         have been made.
         """
-        if not hasattr(self, '_requests'):
-            all_requests = [RegistryRequest(unit)
-                            for unit in self.all_joined_units]
-            is_changed = attrgetter('is_changed')
+        if not hasattr(self, "_requests"):
+            all_requests = [RegistryRequest(unit) for unit in self.all_joined_units]
+            is_changed = attrgetter("is_changed")
             self._requests = list(filter(is_changed, all_requests))
         return self._requests
 
@@ -58,7 +56,7 @@ class DockerRegistryProvides(Endpoint):
         """
         Mark all requests as completed and remove the `requests-pending` flag.
         """
-        clear_flag(self.expand_name('requests-pending'))
+        clear_flag(self.expand_name("requests-pending"))
         self._requests = []
 
     def set_registry_config(self, registry_netloc, **kwargs):
@@ -66,7 +64,7 @@ class DockerRegistryProvides(Endpoint):
         Set the registry config. Minimally, a network location is required.
         Other data (auth, tls, etc) may also be set.
         """
-        data = {'registry_netloc': registry_netloc}
+        data = {"registry_netloc": registry_netloc}
         for k, v in kwargs.items():
             data[k] = v
         for relation in self.relations:
@@ -77,6 +75,7 @@ class RegistryRequest:
     """
     A request from a single remote unit to include an image in our registry.
     """
+
     def __init__(self, unit):
         self._unit = unit
 
@@ -89,7 +88,7 @@ class RegistryRequest:
         """
         Whether or not an image has been processed via `image_data`.
         """
-        return 'image' in self._unit.relation.to_publish
+        return "image" in self._unit.relation.to_publish
 
     @property
     def is_changed(self):
@@ -108,7 +107,7 @@ class RegistryRequest:
         Set the image characteristics this request.
         """
         data = {
-            'image': image,
-            'tag': tag,
+            "image": image,
+            "tag": tag,
         }
         self._unit.relation.to_publish.update(data)

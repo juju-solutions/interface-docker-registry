@@ -50,65 +50,77 @@ class DockerRegistryRequires(Endpoint):
         """
         return self.relations[0].to_publish
 
-    @when('endpoint.{endpoint_name}.changed')
+    @when("endpoint.{endpoint_name}.changed")
     def check_ready(self):
-        toggle_flag(self.expand_name('ready'), self.is_ready)
-        clear_flag(self.expand_name('changed'))
+        toggle_flag(self.expand_name("ready"), self.is_ready)
+        clear_flag(self.expand_name("changed"))
 
-    @when_not('endpoint.{endpoint_name}.joined')
+    @when_not("endpoint.{endpoint_name}.joined")
     def remove_ready(self):
-        clear_flag(self.expand_name('ready'))
+        clear_flag(self.expand_name("ready"))
 
     def has_auth_basic(self):
         """
         Whether or not the registry has basic/htpasswd auth.
         """
-        return all(field is not None for field in [
-            self.basic_password,
-            self.basic_user,
-        ])
+        return all(
+            field is not None
+            for field in [
+                self.basic_password,
+                self.basic_user,
+            ]
+        )
 
     def has_custom_url(self):
         """
         Whether or not the registry has a custom URL.
         """
-        return all(field is not None for field in [
-            self.registry_url,
-        ])
+        return all(
+            field is not None
+            for field in [
+                self.registry_url,
+            ]
+        )
 
     def has_tls(self):
         """
         Whether or not the registry has TLS certificates configured.
         """
-        return all(field is not None for field in [
-            self.tls_ca,
-        ])
+        return all(
+            field is not None
+            for field in [
+                self.tls_ca,
+            ]
+        )
 
     @property
     def is_ready(self):
         """
         Whether or not the request for this instance has been completed.
         """
-        return all(field is not None for field in [
-            self.registry_netloc,
-        ])
+        return all(
+            field is not None
+            for field in [
+                self.registry_netloc,
+            ]
+        )
 
     @property
     def basic_password(self):
-        return self._received.get('basic_password')
+        return self._received.get("basic_password")
 
     @property
     def basic_user(self):
-        return self._received.get('basic_user')
+        return self._received.get("basic_user")
 
     @property
     def registry_netloc(self):
-        return self._received.get('registry_netloc')
+        return self._received.get("registry_netloc")
 
     @property
     def registry_url(self):
-        return self._received.get('registry_url')
+        return self._received.get("registry_url")
 
     @property
     def tls_ca(self):
-        return self._received.get('tls_ca')
+        return self._received.get("tls_ca")
